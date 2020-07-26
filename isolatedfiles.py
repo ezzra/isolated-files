@@ -17,22 +17,16 @@ parser.add_argument('-t', '--target', dest='targets', action='append', help='set
 args = parser.parse_args()
 
 
-def create_foundfiles(folders):
+def create_foundfiles(folders: list) -> dict:
     foundfiles = dict()
     files = list()
     for folder in folders:
         files += get_allfiles(folder)
 
     for filepathname in files:
-        filename = os.path.basename(filepathname).lower()
-        size = os.stat(filepathname).st_size
-        merge_id = filename + str(size)
-
-        # merge_id appears for first time within this folder
+        merge_id = get_merge_id(filepathname)
         if merge_id not in foundfiles:
             foundfiles[merge_id] = list()
-
-        # add this filepath to merge_id of this folder
         foundfiles[merge_id].append(filepathname)
 
     return foundfiles
@@ -45,6 +39,14 @@ def get_allfiles(folder: str) -> list:
         for file in files:
             allfiles.append(os.path.join(root, file))
     return allfiles
+
+
+def get_merge_id(filepathname: str) -> str:
+    """Returns an id of filename + filesize to identify files as duplicate"""
+    filename = os.path.basename(filepathname).lower()
+    size = os.stat(filepathname).st_size
+    merge_id = filename + str(size)
+    return merge_id
 
 
 # create dicts with merge_ids
