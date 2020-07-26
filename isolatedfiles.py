@@ -25,39 +25,34 @@ def create_foundfiles(folders: list) -> dict:
     for folder in folders:
         ssh = re.findall(r'([^\s/]+):(.*)', folder)
         if ssh:
-            files += get_allfiles_ssh(ssh[0][0], ssh[0][1])
+            files += get_allfiles(ssh[0][1] or '.', ssh[0][0])
         else:
             files += get_allfiles(folder)
 
-    for filepathname in files:
-        merge_id = get_merge_id(filepathname)
+    for filedatastring in files:
+        merge_id = get_merge_id(filedatastring)
         if merge_id not in foundfiles:
             foundfiles[merge_id] = list()
-        foundfiles[merge_id].append(filepathname)
+        filepathname = re.findall(r"\{(\d+)\}(.+)", filedatastring)
+        foundfiles[merge_id].append(filepathname[0][1])
 
     return foundfiles
 
 
-def get_allfiles(folder: str) -> list:
-    """Returns all files from all subfolders as a list"""
-    allfiles = list()
-    for root, dirs, files in os.walk(folder):
-        for file in files:
-            allfiles.append(os.path.join(root, file))
-    return allfiles
-
-
 def get_merge_id(filepathname: str) -> str:
     """Returns an id of filename + filesize to identify files as duplicate"""
-    filename = os.path.basename(filepathname).lower()
-    size = os.stat(filepathname).st_size
-    merge_id = filename + str(size)
+    filedata = re.findall(r"\{(\d+)\}(.+)", filepathname)
+    filename = os.path.basename(filedata[0][1]).lower()
+    merge_id = filename + filedata[0][0]
     return merge_id
 
 
-def get_allfiles_ssh(ssh_shortcut: str, folder: str) -> list:
+def get_allfiles(folder: str, ssh_shortcut: str = None) -> list:
+    """Returns all files from all subfolders as a list"""
+    ssh_string = 'ssh {} '.format(ssh_shortcut) if ssh_shortcut else ''
+    cmd = '{}find {} -type f -printf "{{%k}}%p\\n"'.format(ssh_string, folder or '.')
     filenames = subprocess.check_output(
-        'ssh %s find %s -type f' % (ssh_shortcut, folder or '.'),
+        cmd,
         stderr=subprocess.STDOUT,
         timeout=30,
         shell=True,
@@ -78,9 +73,6 @@ for merge_id in missings:
     print('---')
     for filepathname in found_targetfiles[merge_id]:
         print(filepathname)
-
-
-
 
 
 
