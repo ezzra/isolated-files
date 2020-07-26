@@ -7,6 +7,8 @@ import sys
 import glob
 import argparse
 import pprint
+import subprocess
+import re
 
 pp = pprint.PrettyPrinter(width=500)
 
@@ -21,7 +23,11 @@ def create_foundfiles(folders: list) -> dict:
     foundfiles = dict()
     files = list()
     for folder in folders:
-        files += get_allfiles(folder)
+        ssh = re.findall(r'([^\s/]+):(.*)', folder)
+        if ssh:
+            files += get_allfiles_ssh(ssh[0][0], ssh[0][1])
+        else:
+            files += get_allfiles(folder)
 
     for filepathname in files:
         merge_id = get_merge_id(filepathname)
@@ -47,6 +53,17 @@ def get_merge_id(filepathname: str) -> str:
     size = os.stat(filepathname).st_size
     merge_id = filename + str(size)
     return merge_id
+
+
+def get_allfiles_ssh(ssh_shortcut: str, folder: str) -> list:
+    filenames = subprocess.check_output(
+        'ssh %s find %s -type f' % (ssh_shortcut, folder or '.'),
+        stderr=subprocess.STDOUT,
+        timeout=30,
+        shell=True,
+        universal_newlines=True)
+    allfiles = filenames.splitlines()
+    return allfiles
 
 
 # create dicts with merge_ids
