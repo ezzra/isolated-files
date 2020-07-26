@@ -22,6 +22,6 @@ $ isolated-files.py --source folder1 --target folder2
 #/folder2/file4.txt
 ```
 
-- there is a distinction between source
+- there is a distinction between source and target folders, so `file3.txt` is not in `folder2` but that doesn't matter
 - you can use multiple source or target folders (just `--target folder2 --target folder3`)
 - you can also use an ssh folder for example `--source myserver:folder1` where _myserver_ must be configured as host in ssh config
