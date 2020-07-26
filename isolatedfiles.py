@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Syntax: duplicates.py DIRECTORY DIRECTORY DIRECTORY ...
+# Syntax: duplicates.py -s source_folder -t target_folder
 
 import os
 import sys
@@ -10,13 +10,20 @@ import pprint
 
 pp = pprint.PrettyPrinter(width=500)
 
+# argument parsing
+parser = argparse.ArgumentParser(description='Find files that do not exist in the source folders but in the target folders.')
+parser.add_argument('-s', '--source', dest='sources', action='append', help='set source folders', required=True)
+parser.add_argument('-t', '--target', dest='targets', action='append', help='set target folders', required=True)
+args = parser.parse_args()
 
-def create_foundfiles(files):
+
+def create_foundfiles(folders):
     foundfiles = dict()
+    files = list()
+    for folder in folders:
+        files += get_allfiles(folder)
 
     for filepathname in files:
-
-        # todo is nur der basename ohne ext?
         filename = os.path.basename(filepathname).lower()
         size = os.stat(filepathname).st_size
         merge_id = filename + str(size)
@@ -31,23 +38,18 @@ def create_foundfiles(files):
     return foundfiles
 
 
-# argument parsing
-parser = argparse.ArgumentParser(description='Find files that do not exist in the source folders but in the target folders.')
-parser.add_argument('-s', '--source', dest='sources', action='append', help='set source folders', required=True)
-parser.add_argument('-t', '--target', dest='targets', action='append', help='set target folders', required=True)
-args = parser.parse_args()
+def get_allfiles(folder: str) -> list:
+    """Returns all files from all subfolders as a list"""
+    allfiles = list()
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            allfiles.append(os.path.join(root, file))
+    return allfiles
 
-# collect sourcefiles and targetfiles
-sourcefiles = list()
-targetfiles = list()
-for folder in args.sources:
-    sourcefiles += glob.glob(os.path.join(folder, "**", "*.*"), recursive=True)
-for folder in args.targets:
-    targetfiles += glob.glob(os.path.join(folder, "**", "*.*"), recursive=True)
 
 # create dicts with merge_ids
-found_sourcefiles = create_foundfiles(sourcefiles)
-found_targetfiles = create_foundfiles(targetfiles)
+found_sourcefiles = create_foundfiles(args.sources)
+found_targetfiles = create_foundfiles(args.targets)
 
 # get merge_ids that are not served in sources
 missings = found_targetfiles.keys() - found_sourcefiles.keys()
