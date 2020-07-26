@@ -21,3 +21,4 @@ $ isolated-files.py -s folder1 -t folder2
 ```
 
 - you can use multiple source or target folders
+- you can also use an ssh folder like `-s myserver:folder1` where _myserver_ must be configured as host in ssh config
