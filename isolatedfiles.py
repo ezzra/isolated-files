@@ -13,9 +13,9 @@ import re
 pp = pprint.PrettyPrinter(width=500)
 
 # argument parsing
-parser = argparse.ArgumentParser(description='Find files that do not exist in the source folders but in the target folders.')
-parser.add_argument('-s', '--source', dest='sources', action='append', help='set source folders', required=True)
-parser.add_argument('-t', '--target', dest='targets', action='append', help='set target folders', required=True)
+parser = argparse.ArgumentParser(description='Find files that do not exist in the source folders but in the target folders (call it anti-duplicates).')
+parser.add_argument('-s', '--source', dest='sources', action='append', help='set source folders (use myhost:foldername for remote ssh connections)', required=True)
+parser.add_argument('-t', '--target', dest='targets', action='append', help='set target folders (use myhost:foldername for remote ssh connections)', required=True)
 args = parser.parse_args()
 
 
