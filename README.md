@@ -30,3 +30,5 @@ folder3
 $ isolated-files.py --source folder1 --target folder2 --target folder3
 #/folder2/file4.txt
 ```
+
+you can use `-l /copy/folder/path` to specify a folder where the found files are hardlinked to
