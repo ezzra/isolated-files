@@ -16,6 +16,7 @@ pp = pprint.PrettyPrinter(width=500)
 parser = argparse.ArgumentParser(description='Find files that do not exist in the source folders but in the target folders (call it anti-duplicates).')
 parser.add_argument('-s', '--source', dest='sources', action='append', help='set source folders (use myhost:foldername for remote ssh connections)', required=True)
 parser.add_argument('-t', '--target', dest='targets', action='append', help='set target folders (use myhost:foldername for remote ssh connections)', required=True)
+parser.add_argument('-l', '--hardlink-folder', help='set a path to an folder where found files should be hardlinked to')
 args = parser.parse_args()
 
 
@@ -72,6 +73,10 @@ missings = found_targetfiles.keys() - found_sourcefiles.keys()
 for merge_id in missings:
     print('---')
     for filepathname in found_targetfiles[merge_id]:
+        if args.hardlink_folder:
+            subprocess.run(
+                'ln \'{2}\' \'{0}/{1}\''.format(args.hardlink_folder, os.path.basename(filepathname), filepathname),
+                shell=True)
         print(filepathname)
 
 
